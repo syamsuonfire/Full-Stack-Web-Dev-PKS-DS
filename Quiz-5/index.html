@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Document</title>
+    </head>
+
+    <body>
+        <div id="app">
+            <div style="display: flex">
+                <form action="">
+                    <input
+                        type="text"
+                        placeholder="Masukkan nama"
+                        v-model="newName"
+                    />
+                </form>
+
+                <button v-if="edit==false" v-on:click="addName">Add</button>
+                <button v-else v-on:click="updateName">Update</button>
+            </div>
+
+            <ul>
+                <li v-for="(name, index) in showNames">
+                    {{name.name}}
+                    <button v-on:click="editName(index,name.name)">Edit</button>
+                    <button v-on:click="deleteName(index)">Delete</button>
+                </li>
+            </ul>
+        </div>
+
+        <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
+        <script>
+            var vm = new Vue({
+                el: "#app",
+                data: {
+                    newName: "",
+                    edit: false,
+                    editedIndex: 0,
+                    names: [
+                        {
+                            name: "Muhammad Iqbal Mubarok",
+                        },
+                        {
+                            name: "Ruby Purwanti",
+                        },
+                        {
+                            name: "Faqih Muhammad",
+                        },
+                    ],
+                },
+                computed: {
+                    showNames: function () {
+                        return this.names;
+                    },
+                },
+                methods: {
+                    addName: function () {
+                        this.names.push({ name: this.newName });
+                    },
+                    editName: function (index, name) {
+                        this.editedIndex = index;
+                        this.newName = name;
+                        this.edit = true;
+                    },
+                    updateName: function () {
+                        this.names[this.editedIndex].name = this.newName;
+                        this.edit = false;
+                    },
+                    deleteName: function (index) {
+                        konfirmasi = confirm("Anda yakin?");
+                        if (konfirmasi == true) {
+                            this.names.splice(index, 1);
+                        }
+                    },
+                },
+            });
+        </script>
+    </body>
+</html>
