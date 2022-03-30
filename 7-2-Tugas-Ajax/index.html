@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Document</title>
+    </head>
+    <body>
+        <div id="app">
+            <form @submit.prevent="submitMember()">
+                <label>Name : </label>
+                <br />
+                <input
+                    type="text"
+                    :disabled="buttonStatus == 'upload'"
+                    name="name"
+                    ref="name"
+                    v-model="name"
+                />
+                <br />
+                <label>Address : </label>
+                <br />
+                <input
+                    type="text"
+                    :disabled="buttonStatus == 'upload'"
+                    name="address"
+                    ref="address"
+                    v-model="address"
+                />
+                <br />
+                <label>Phone Number : </label>
+                <br />
+                <input
+                    type="number"
+                    :disabled="buttonStatus == 'upload'"
+                    name="no_hp"
+                    ref="no_hp"
+                    v-model="no_hp"
+                />
+                <br />
+                <div v-if="buttonStatus == 'submit'">
+                    <input type="submit" value="SUBMIT" />
+                </div>
+                <div v-else-if="buttonStatus == 'update'">
+                    <input
+                        type="button"
+                        value="UPDATE"
+                        @click="updateMember(idshowMember)"
+                    />
+                    <input
+                        type="button"
+                        value="CANCEL"
+                        @click="clearForm"
+                        style="margin-top: 5px"
+                    />
+                </div>
+                <div v-else-if="buttonStatus == 'upload'">
+                    <input
+                        type="file"
+                        name="photo_profile"
+                        ref="photo_profile"
+                    />
+                    <br />
+                    <input
+                        type="button"
+                        value="UPLOAD"
+                        @click="submitPhoto(idUploadMember)"
+                        style="margin-top: 5px; margin-bottom: 5px"
+                    />
+                    <input
+                        type="button"
+                        value="CANCEL"
+                        @click="clearForm"
+                        style="margin-top: 5px"
+                    />
+                </div>
+            </form>
+            <br /><br />
+            <table border="1" style="width: 100%; border: 1px solid #ccc">
+                <thead>
+                    <tr>
+                        <th>image</th>
+                        <th>name</th>
+                        <th>adreess</th>
+                        <th>no_hp</th>
+                        <th>action</th>
+                    </tr>
+                </thead>
+                <tbody v-for="member of members">
+                    <tr>
+                        <td>
+                            <img
+                                width="100"
+                                :src="member.photo_profile ? photoProfile + member.photo_profile : 'https://dummyimage.com/600x400/000/ffffff&text=Foto+Profil'"
+                                alt="Photo Profile"
+                            />
+                        </td>
+                        <td>{{member.name}}</td>
+                        <td>{{member.address}}</td>
+                        <td>{{member.no_hp}}</td>
+                        <td>
+                            <button @click="showMember(member.id)">Edit</button>
+                            <button @click="removeMember(member.id)">
+                                Hapus
+                            </button>
+                            <button @click="uploadFoto(member)">
+                                Upload Foto
+                            </button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+        <script>
+            var axios = axios.create({
+                baseURL: "http://demo-api-vue.sanbercloud.com/api/member",
+            });
+            var vm = new Vue({
+                el: "#app",
+                data: {
+                    name: "",
+                    address: "",
+                    no_hp: "",
+                    members: [],
+                    photoProfile: "http://demo-api-vue.sanbercloud.com/",
+                    buttonStatus: "submit",
+                    idshowMember: null,
+                    idUploadMember: null,
+                },
+                methods: {
+                    getAll: async function () {
+                        try {
+                            const config = {
+                                method: "get",
+                                url: ``,
+                            };
+                            const res = await axios(config);
+                            this.members = res.data.members;
+                        } catch (error) {
+                            console.log(error);
+                        }
+                    },
+                    showMember: async function (id) {
+                        try {
+                            const config = {
+                                method: "get",
+                                url: `${id}`,
+                            };
+                            const res = await axios(config);
+                            this.name = res.data.member.name;
+                            this.address = res.data.member.address;
+                            this.no_hp = res.data.member.no_hp;
+                            this.buttonStatus = "update";
+                            this.idshowMember = id;
+                        } catch (error) {
+                            console.log(error);
+                        }
+                    },
+                    submitMember: async function () {
+                        try {
+                            let formData = new FormData();
+                            formData.append("name", this.name);
+                            formData.append("address", this.address);
+                            formData.append("no_hp", this.no_hp);
+
+                            const config = {
+                                method: "post",
+                                url: "",
+                                data: formData,
+                            };
+                            const res = await axios(config);
+                            this.clearForm();
+                            this.getAll();
+                        } catch (error) {
+                            console.log(error);
+                        }
+                    },
+                    updateMember: async function (id) {
+                        try {
+                            let updateData = new FormData();
+                            updateData.append("name", this.name);
+                            updateData.append("address", this.address);
+                            updateData.append("no_hp", this.no_hp);
+
+                            let config = {
+                                method: "post",
+                                url: `http://demo-api-vue.sanbercloud.com/api/member/${id}`,
+                                params: { _method: "PUT" },
+                                data: updateData,
+                            };
+                            const res = await axios(config);
+                            this.clearForm();
+                            this.getAll();
+                        } catch (error) {
+                            console.log(error);
+                        }
+                    },
+                    removeMember: async function (id) {
+                        try {
+                            const config = {
+                                method: "delete",
+                                url: `/${id}`,
+                            };
+
+                            const res = await axios(config);
+                            this.getAll();
+                        } catch (error) {
+                            console.log(error);
+                        }
+                    },
+                    uploadFoto: function (member) {
+                        this.name = member.name;
+                        this.address = member.address;
+                        this.no_hp = member.no_hp;
+                        this.idUploadMember = member.id;
+                        this.buttonStatus = "upload";
+                    },
+                    submitPhoto: async function (id) {
+                        try {
+                            let file = this.$refs.photo_profile.files[0];
+                            let formData = new FormData();
+                            formData.append("photo_profile", file);
+
+                            const config = {
+                                method: "post",
+                                url: `/${id}/upload-photo-profile`,
+                                data: formData,
+                            };
+
+                            const res = await axios(config);
+                            this.clearForm();
+                            this.getAll();
+                        } catch (error) {
+                            console.log(error);
+                        }
+                    },
+                    clearForm: function () {
+                        this.name = "";
+                        this.address = "";
+                        this.no_hp = "";
+                        this.buttonStatus = "submit";
+                        this.idshowMember = null;
+                        this.idUploadMember = null;
+                    },
+                },
+                created() {
+                    this.getAll();
+                },
+            });
+        </script>
+    </body>
+</html>
