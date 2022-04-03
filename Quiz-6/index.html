@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+ <meta charset="UTF-8">
+ <meta http-equiv="X-UA-Compatible" content="IE=edge">
+ <meta name="viewport" content="width=device-width, initial-scale=1.0">
+ <title>Document</title>
+ <style>
+  form {
+   border: 1px solid #ddd;
+   padding: 5px;
+   width: 225px;
+   background: #efefef;
+  }
+
+  label {
+   display: block;
+   margin-top: 5px;
+  }
+
+  input,
+  textarea,
+  select,
+  option {
+   min-width: 200px;
+  }
+ </style>
+
+</head>
+
+<body>
+ <div id="app">
+  <form @submit.prevent="submitForm()">
+   <p v-if="errors.length">
+    <b>Please correct the following errors :</b>
+   <ul>
+    <li v-for="error in errors">{{ error }}</li>
+   </ul>
+   </p>
+   <label>Title : </label>
+   <input type="text" :disabled="buttonStatus == 'upload'" name="title" ref="title" v-model="title">
+   <label>Description : </label>
+   <textarea name="description" :disabled="buttonStatus == 'upload'" ref="description" v-model="description"></textarea>
+
+   <div v-if="buttonStatus = 'submit'">
+    <input type="submit" value="SUBMIT">
+   </div>
+   <div v-else-if="buttonStatus == 'update'">
+    <input type="button" @click="updateBlog(idEditBlog)" value="UPDATE">
+    <input type="button" value="CANCEL" @click="clearForm" style="margin-top:5px">
+   </div>
+   <div v-else-if="buttonStatus == 'upload'">
+    <input type="file" name="photo" ref="photo">
+    <input type="button" value="UPLOAD" @click="submitPhoto(idUploadBlog)" style="margin-top:5px;">
+    <input type="button" value="CANCEL" @click="clearForm" style="margin-top:5px">
+   </div>
+
+  </form>
+
+  <br><br>
+
+  <blogs-component 
+   :seluruh_blog="blogs" 
+   @edit="editBlog"
+   @remove="removeBlog"
+   @upload="uploadPhoto"
+  ></blogs-component>
+
+  
+
+
+ </div>
+ <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
+ <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+ <script>
+
+  const BlogsComponent = {
+   template :
+   `
+    <table border=1>
+      <tr v-for="seluruh_blog of blog">
+       <td>
+        <img width=100 :src="blog.photo ? domain + blog.photo : 'https://picsum.photos/200/300'" alt="">
+       </td>
+       <td>
+        <b>Title : </b> {{ blog.title }} <br>
+        <b>Description : </b> {{ blog.description }} <br>
+
+       </td>
+       <td>
+        <button @click="$emit(edit , blog)">Edit</button>
+        <button @click="$emit(remove , blog.id)">Hapus</button>
+        <button @click="$emit(upload , blog)">Upload Foto</button>
+       </td>
+      </tr>
+     </table>
+    `,
+   props : ['seluruh_blog' , 'domain']
+  }
+
+  var vm = new Vue({
+   el: '#app',
+   components : {
+    'blogs-component' :  BlogsComponent
+   },
+   data: {
+    title: '',
+    description: '',
+    errors: [],
+    blogs: [],
+    domain: 'http://demo-api-vue.sanbercloud.com/',
+    buttonStatus: 'submit',
+    idEditBlog: null,
+    idUploadBlog: null
+   },
+   methods: {
+    validationForm: function () {
+     this.errors = []
+
+     if (this.title.length < 5) {
+      this.errors.push('Title minimal 5 karakter')
+      this.$refs.title.focus()
+
+     }
+
+     if (this.description.length > 30) {
+      this.errors.push('Description tidak boleh lebih dari 30 karakter')
+      this.$refs.description.focus()
+
+     }
+    },
+
+    submitForm: function () {
+
+     this.validationForm()
+
+     if (this.errors.length === 0) {
+
+      let formData = new FormData()
+      formData.append('title', this.title)
+      formData.append('description', this.description)
+
+
+
+      const config = {
+       method: "post",
+       url: `${this.domain}/api/blog`,
+       data: formData
+      }
+
+      axios(config)
+       .then((response) => {
+        this.clearForm()
+        this.getBlogs()
+        alert(response.data.message)
+
+       })
+       .catch((error) => {
+
+       })
+
+
+
+     }
+
+
+    },
+
+    getBlogs: function () {
+
+     const config = {
+      method: "get",
+      url: `${this.domain}/api/blog`
+     }
+
+     axios(config)
+      .then((response) => {
+
+       this.blogs = response.data.blogs
+
+
+
+      })
+      .catch((error) => {
+       console.log(error)
+      })
+
+
+    },
+
+    removeBlog: function (id) {
+
+     const config = {
+      method: "post",
+      url: `${this.domain}/api/blog/${id}`,
+      params: { _method: "DELETE" }
+
+     }
+
+     axios(config)
+      .then((response) => {
+       this.getBlogs()
+       alert(response.data.message)
+      })
+      .catch((error) => {
+       console.log(error)
+      })
+
+     console.log(id)
+    },
+
+    editBlog: function (blog) {
+     this.title = blog.title
+     this.description = blog.description
+     this.buttonStatus = 'update'
+     this.idEditBlog = blog.id
+    },
+
+    clearForm: function () {
+     title = ''
+     description = ''
+     buttonStatus = 'submit'
+     idEditBlog = null
+     idUploadBlog = null
+    },
+
+    updateBlog: function (id) {
+
+     this.validationForm()
+
+     if (this.errors.length === 0) {
+
+      let formData = new FormData()
+      formData.append('title', this.title)
+      formData.append('description', this.description)
+
+      let config = {
+       method: "post",
+       url: `${this.domain}/api/blog/${id}`,
+       params: { _method: 'PUT' },
+       data: formData
+      }
+
+      axios(config)
+       .then((response) => {
+
+        this.clearForm()
+        this.getBlogs()
+
+        alert(response.data.message)
+
+       })
+       .catch((error) => {
+        console.log(error)
+       })
+     }
+
+
+    },
+
+    uploadPhoto: function (blog) {
+     this.title = blog.title
+     this.description = blog.description
+     this.buttonStatus = 'upload'
+     this.idUploadBlog = blog.id
+    },
+
+    submitPhoto: function (id) {
+
+     let file = this.$refs.photo.files[0]
+
+     let formData = new FormData()
+     formData.append('photo', file)
+
+     let config = {
+      method: "post",
+      url: `${this.domain}/api/blog/${id}/upload-photo`,
+      data: formData
+     }
+
+     axios(config)
+      .then((response) => {
+       this.clearForm()
+
+       this.getBlogs()
+
+       alert(response.data.message)
+
+      })
+      .catch((error) => {
+       console.log(error)
+      })
+    }
+
+   },
+
+   created() {
+    this.getBlogs()
+   }
+
+  })
+
+ </script>
+
+</body>
+
+</html>
