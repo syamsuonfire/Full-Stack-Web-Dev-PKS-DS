@@ -43,7 +43,7 @@
    <label>Description : </label>
    <textarea name="description" :disabled="buttonStatus == 'upload'" ref="description" v-model="description"></textarea>
 
-   <div v-if="buttonStatus = 'submit'">
+   <div v-if="buttonStatus == 'submit'">
     <input type="submit" value="SUBMIT">
    </div>
    <div v-else-if="buttonStatus == 'update'">
@@ -60,11 +60,7 @@
 
   <br><br>
 
-  <blogs-component 
-   :seluruh_blog="blogs" 
-   @edit="editBlog"
-   @remove="removeBlog"
-   @upload="uploadPhoto"
+  <blogs-component :seluruh_blog="blogs" :domain="domain" @edit="editBlog" @remove="removeBlog" @upload="uploadPhoto"
   ></blogs-component>
 
   
@@ -78,9 +74,8 @@
 
   const BlogsComponent = {
    template :
-   `
-    <table border=1>
-      <tr v-for="seluruh_blog of blog">
+   ` <table border=1>
+      <tr v-for="blog of seluruh_blog">
        <td>
         <img width=100 :src="blog.photo ? domain + blog.photo : 'https://picsum.photos/200/300'" alt="">
        </td>
@@ -90,9 +85,9 @@
 
        </td>
        <td>
-        <button @click="$emit(edit , blog)">Edit</button>
-        <button @click="$emit(remove , blog.id)">Hapus</button>
-        <button @click="$emit(upload , blog)">Upload Foto</button>
+        <button @click="$emit('edit' , blog)">Edit</button>
+        <button @click="$emit('remove' , blog.id)">Hapus</button>
+        <button @click="$emit('upload' , blog)">Upload Foto</button>
        </td>
       </tr>
      </table>
@@ -160,12 +155,7 @@
        .catch((error) => {
 
        })
-
-
-
      }
-
-
     },
 
     getBlogs: function () {
@@ -177,11 +167,7 @@
 
      axios(config)
       .then((response) => {
-
        this.blogs = response.data.blogs
-
-
-
       })
       .catch((error) => {
        console.log(error)
@@ -203,6 +189,7 @@
       .then((response) => {
        this.getBlogs()
        alert(response.data.message)
+       console.log(response)
       })
       .catch((error) => {
        console.log(error)
@@ -219,11 +206,11 @@
     },
 
     clearForm: function () {
-     title = ''
-     description = ''
-     buttonStatus = 'submit'
-     idEditBlog = null
-     idUploadBlog = null
+     this.title = ''
+     this.description = ''
+     this.buttonStatus = 'submit'
+     this.idEditBlog = null
+     this.idUploadBlog = null
     },
 
     updateBlog: function (id) {
@@ -261,10 +248,11 @@
     },
 
     uploadPhoto: function (blog) {
-     this.title = blog.title
-     this.description = blog.description
-     this.buttonStatus = 'upload'
-     this.idUploadBlog = blog.id
+        console.log(blog)
+        this.title = blog.title
+        this.description = blog.description
+        this.buttonStatus = 'upload'
+        this.idUploadBlog = blog.id
     },
 
     submitPhoto: function (id) {
