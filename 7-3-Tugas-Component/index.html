@@ -1,135 +1,103 @@
 <!DOCTYPE html>
-
 <html lang="en">
-    <head>
-        <meta charset="UTF-8" />
 
-        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vue Component</title>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
+</head>
 
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
-        <title>Tugas Component</title>
-
-        <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
-    </head>
-
-    <body>
-        <div id="app">
-            <div class="formInput">
-                <input type="text" v-model="formUser" />
-
-                <button v-if="!editButton" @click="addUser">Add</button>
-
-                <button v-if="editButton" @click="updateUser">Update</button>
-            </div>
-            <div class="usersList">
-
-                <ul>
-    
-                    <li v-for="(user , index) in reverseUsers" :key="index">
-    
-                        {{ user.name }} ||
-    
-                        <button @click="editUser(index)">Edit</button>
-    
-                        <button @click="deleteUser(index)">Delete</button>
-    
-                    </li>
-    
-                </ul>
-    
-            </div>
-
-
+<body>
+    <div id="app">
+        <div class="formInput">
+            <input type="text" v-model="formUser">
+            <button v-if="!editButton" @click="addUser">
+                Add</button>
+            <button v-if="editButton" @click="updateUser">
+                Update</button>
         </div>
 
-        <script>
-            let UsersComponent = {
-                template: `
-                <div class="usersList">
+        <users-component :reverse-users="reverseUsers" @edit-user="editUser($event)" @delete-user="deleteUser($event)">
+        </users-component>
+    </div>
+
+    <script>
+        const UsersComponent = {
+            template: `
+            <div class="usersList">
                 <ul>
                     <li v-for="(user , index) in reverseUsers" :key="index">
                         {{ user.name }} ||
-
-                        <button @click="editUser(index)">Edit</button>
-
-                        <button @click="deleteUser(index)">Delete</button>
+                        <button @click="$emit('edit-user', index)">Edit</button>
+                        <button @click="$emit('delete-user', index)">Delete</button>
                     </li>
                 </ul>
-            </div>`,
-                props: ["member"],
-            };
+            </div>
+            `,
+            props: ['reverseUsers']
+        }
 
-
-
-            let vm = new Vue({
-                el: "#app",
-                components: {
-                    "users_component": UsersComponent,
-
+        let vm = new Vue({
+            el: '#app',
+            components: {
+                'users-component': UsersComponent
+            },
+            data: {
+                users: [{
+                        name: 'Muhammad Iqbal Mubarok'
+                    },
+                    {
+                        name: 'Ruby Purwanti'
+                    },
+                    {
+                        name: 'Faqih Muhammad'
+                    },
+                ],
+                formUser: '',
+                editButton: false,
+                idSelected: null
+            },
+            computed: {
+                reverseUsers: {
+                    get: function () {
+                        return this.users.slice().reverse()
+                    },
+                    set: function (value) {
+                        this.users = value.slice().reverse()
+                    }
+                }
+            },
+            methods: {
+                addUser: function () {
+                    this.users.push({
+                        name: this.formUser
+                    })
+                    this.formUser = ''
                 },
-                data: {
-                    users: [
-                        { name: "Muhammad Iqbal Mubarok" },
-
-                        { name: "Ruby Purwanti" },
-
-                        { name: "Faqih Muhammad" },
-                    ],
-
-                    formUser: "",
-
-                    editButton: false,
-
-                    idSelected: null,
+                editUser: function (id) {
+                    this.formUser = this.reverseUsers[id].name
+                    this.editButton = true,
+                        this.idSelected = id
                 },
-
-                computed: {
-                    reverseUsers: {
-                        get: function () {
-                            return this.users.slice().reverse();
-                        },
-
-                        set: function (value) {
-                            this.users = value.slice().reverse();
-                        },
-                    },
+                updateUser: function () {
+                    this.reverseUsers[this.idSelected].name = this.formUser
+                    this.formUser = ''
+                    this.editButton = false
                 },
+                deleteUser: function (id) {
+                    let confirmation = confirm("Anda yakin ?")
 
-                methods: {
-                    addUser: function () {
-                        this.users.push({ name: this.formUser });
+                    if (confirmation) {
+                        this.reverseUsers = this.reverseUsers.filter(function (item, index) {
+                            return index != id
+                        })
+                    }
+                }
+            }
+        })
+    </script>
+</body>
 
-                        this.formUser = "";
-                    },
-
-                    editUser: function (id) {
-                        this.formUser = this.reverseUsers[id].name;
-
-                        (this.editButton = true), (this.idSelected = id);
-                    },
-
-                    updateUser: function () {
-                        this.reverseUsers[this.idSelected].name = this.formUser;
-
-                        this.formUser = "";
-
-                        this.editButton = false;
-                    },
-
-                    deleteUser: function (id) {
-                        let confirmation = confirm("Anda yakin ?");
-
-                        if (confirmation) {
-                            this.reverseUsers = this.reverseUsers.filter(
-                                function (item, index) {
-                                    return index != id;
-                                }
-                            );
-                        }
-                    },
-                },
-            });
-        </script>
-    </body>
 </html>

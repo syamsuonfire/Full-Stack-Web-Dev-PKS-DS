@@ -1,34 +1,130 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Animal</title>
-</head>
-<body>
-    <?php
+<?php
+trait hewan
+{
+    public $nama,
+        $darah = 50,
+        $jumlahkaki,
+        $keahlian;
 
-    require_once 'Hewan.php';
+    public function atraksi()
+    {
+        return "$this->nama sedang $this->keahlian";
+    }
+}
+
+trait fight
+{
+    public $attackPower, $defensePower;
+
+    public function serang($diserang)
+    {
+        return "$this->nama sedang menyerang $diserang";
+    }
+
+    public function diserang($attackPenyerang, $defenseDiserang)
+    {
+        $darah = $this->darah;
+
+        $darahSekarang = $this->darah = $darah - ($attackPenyerang / $defenseDiserang);
+
+        return "$this->nama sedang diserang. darah $this->nama sekarang adalah $darahSekarang";
+    }
+}
 
 
-    $elang = new Elang("Elang");
-    echo "Name : " . $elang->nama ."<br>"; 
-    echo "Darah : " . $elang->darah ."<br>"; 
-    echo "Jumlah Kaki : " . $elang->jumlahKaki ."<br>"; 
-    echo "Keahlian : " . $elang->keahlian ."<br>"; 
-    echo "Attack Power : " . $elang->attackPower ."<br>"; 
-    echo "Defence Power : " . $elang->defencePower ."<br>"; 
+class elang
+{
+    use hewan, fight;
 
-    echo "<br>";
-    $harimau = new Harimau("Harimau");
-    echo "Name : " . $harimau->nama ."<br>"; 
-    echo "Darah : " . $harimau->darah ."<br>"; 
-    echo "Jumlah Kaki : " . $harimau->jumlahKaki ."<br>"; 
-    echo "Keahlian : " . $harimau->keahlian ."<br>"; 
-    echo "Attack Power : " . $harimau->attackPower ."<br>"; 
-    echo "Defence Power : " . $harimau->defencePower ."<br>"; 
+    public function __construct($nama)
+    {
+        $this->nama = $nama;
+        $this->jumlahkaki = 2;
+        $this->keahlian = 'terbang tinggi';
+        $this->attackPower = 10;
+        $this->defensePower = 5;
+    }
 
-?>
-</body>
-</html>
+    public function getInfoHewan()
+    {
+        return [
+            $this->nama,
+            $this->darah,
+            $this->jumlahkaki,
+            $this->keahlian,
+            $this->attackPower,
+            $this->defensePower,
+        ];
+    }
+}
+
+
+class harimau
+{
+    use hewan, fight;
+
+    public function __construct($nama)
+    {
+        $this->nama = $nama;
+        $this->jumlahkaki = 4;
+        $this->keahlian = 'lari cepat';
+        $this->attackPower = 7;
+        $this->defensePower = 8;
+    }
+
+    public function getInfoHewan()
+    {
+
+        return [
+            $this->nama,
+            $this->darah,
+            $this->jumlahkaki,
+            $this->keahlian,
+            $this->attackPower,
+            $this->defensePower,
+        ];
+    }
+}
+
+
+echo "Profil Elang : <hr>";
+$elang = new elang('Griff');
+$getElang = $elang->getInfoHewan();
+foreach ($getElang as $info) {
+    echo "| $info | ";
+}
+
+echo "<br><br>";
+echo "Profil Harimau : <hr>";
+$harimau = new harimau('Spooky');
+$getHarimau = $harimau->getInfoHewan();
+foreach ($getHarimau as $info) {
+    echo "| $info | ";
+}
+echo "<br><br>";
+
+echo "Nama dan Keahlian : <hr>";
+echo $elang->atraksi();
+echo "<br>";
+echo $harimau->atraksi();
+echo "<br><br>";
+
+echo "Fight : <hr>";
+
+echo $elang->serang($harimau->nama);
+echo "<br>";
+echo $harimau->diserang($elang->attackPower, $harimau->defensePower);
+echo "<br><br>";
+
+echo "Info Hewan saat ini : <hr>";
+$getElang = $elang->getInfoHewan();
+foreach ($getElang as $info) {
+    echo "| $info | ";
+}
+
+echo "<br>";
+
+$getHarimau = $harimau->getInfoHewan();
+foreach ($getHarimau as $info) {
+    echo "| $info | ";
+}
